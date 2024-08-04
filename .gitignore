@@ -189,3 +189,4 @@ instance/*
 !instance/.gitignore
 
 /backend/data/raw/
+/machine_learning/data/

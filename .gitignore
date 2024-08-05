@@ -190,3 +190,9 @@ instance/*
 
 /backend/data/raw/
 /machine_learning/data/
+
+# Ignore all files in the machine_learning/models directory
+/machine_learning/models/*
+
+# But do not ignore the directory itself
+!/machine_learning/models/

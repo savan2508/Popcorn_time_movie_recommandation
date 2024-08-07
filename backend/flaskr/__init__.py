@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from flask import Flask
 from flask_bcrypt import Bcrypt
@@ -24,7 +25,8 @@ def create_app(test_config=None):
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.instance_path, 'flaskr.sqlite')}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         JWT_SECRET_KEY=os.getenv('JWT_SECRET_KEY'),
-        API_TITLE='My API',
+        JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=1),
+        API_TITLE='Popcorn Time API',
         API_VERSION='v1',
         OPENAPI_VERSION='3.0.3',
         OPENAPI_URL_PREFIX='/',
@@ -61,14 +63,16 @@ def create_app(test_config=None):
     api = Api(app)
 
     # Register blueprints
-    from .models.genre_model import genre_blueprint
-    from .models.content_based_filtering import recommendation_blueprint
-    from .models.auth import auth_blueprint
-    app.register_blueprint(genre_blueprint)
-    app.register_blueprint(recommendation_blueprint)
-    app.register_blueprint(auth_blueprint)
+    # from flaskr.models.genre_model import genre_blueprint
+    # api.register_blueprint(genre_blueprint)
+
+    # from flaskr.models.content_based_filtering import recommendation_blueprint
+    # api.register_blueprint(recommendation_blueprint)
+
+    from flaskr.models.auth import auth_blueprint
+    api.register_blueprint(auth_blueprint)
 
     from .routes.user import user_blueprint
-    app.register_blueprint(user_blueprint)
+    api.register_blueprint(user_blueprint)
 
     return app

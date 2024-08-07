@@ -38,8 +38,9 @@ def signup(user_data):
     existing_user_username = User.query.filter_by(username=user_data['username']).first()
     if existing_user_username:
         abort(409, message="User already exists with that username.")
+    password = user_data.pop('password')
     user = User(**user_data)
-    user.password_hash = generate_password_hash(user_data['password'])
+    user.password_hash = generate_password_hash(password)
     db.session.add(user)
     db.session.commit()
     return "User created", 201

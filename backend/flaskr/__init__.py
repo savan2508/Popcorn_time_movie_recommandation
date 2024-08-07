@@ -54,7 +54,7 @@ def create_app(test_config=None):
         pass
 
     # Set up Flask-admin
-    admin = Admin(app, name='Admin Interface', template_mode='bootstrap3', base_template='admin_master.html')
+    admin = Admin(app, name='Admin Interface', template_mode='bootstrap3')
     from .database_models import User, Movie
     admin.add_view(ModelView(User, db.session))
     admin.add_view(ModelView(Movie, db.session))

@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_admin import Admin
+from flask_smorest import Api
 from flask_admin.contrib.sqla import ModelView
 from dotenv import load_dotenv
 
@@ -20,8 +21,15 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=os.getenv('SECRET_KEY'),
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.instance_path, 'flaskr.sqlite')}",
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
         JWT_SECRET_KEY=os.getenv('JWT_SECRET_KEY'),
+        API_TITLE='My API',
+        API_VERSION='v1',
+        OPENAPI_VERSION='3.0.3',
+        OPENAPI_URL_PREFIX='/',
+        OPENAPI_SWAGGER_UI_PATH='/swagger-ui/',
+        OPENAPI_SWAGGER_UI_URL='https://cdn.jsdelivr.net/npm/swagger-ui-dist/'
     )
 
     if test_config is None:
@@ -34,9 +42,7 @@ def create_app(test_config=None):
     # Initialize the database, bcrypt and JWT
     bcrypt.init_app(app)
     jwt.init_app(app)
-    with app.app_context():
-        from . import database
-        database.init_app(app)
+    db.init_app(app)
     migrate = Migrate(app, db)
 
     # ensure the instance folder exists
@@ -46,10 +52,13 @@ def create_app(test_config=None):
         pass
 
     # Set up Flask-admin
-    admin = Admin(app, name='Admin Interface', template_mode='bootstrap3')
-    from .models import User, Movie
+    admin = Admin(app, name='Admin Interface', template_mode='bootstrap3', base_template='admin_master.html')
+    from .database_models import User, Movie
     admin.add_view(ModelView(User, db.session))
     admin.add_view(ModelView(Movie, db.session))
+
+    # Set up Flask-restful
+    api = Api(app)
 
     # Register blueprints
     from .models.genre_model import genre_blueprint
@@ -59,9 +68,7 @@ def create_app(test_config=None):
     app.register_blueprint(recommendation_blueprint)
     app.register_blueprint(auth_blueprint)
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, from Popcorn_time API!'
+    from .routes.user import user_blueprint
+    app.register_blueprint(user_blueprint)
 
     return app

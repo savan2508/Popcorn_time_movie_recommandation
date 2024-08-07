@@ -13,6 +13,7 @@ class User(db.Model):
     preferred_genre = db.Column(db.String)
     recommended_genre = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
+    username = db.Column(db.String, unique=True, nullable=False)
     password_hash = db.Column(db.String)
     firebase_uid = db.Column(db.String, unique=True)
 

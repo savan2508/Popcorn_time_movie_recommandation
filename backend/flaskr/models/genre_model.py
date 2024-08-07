@@ -3,15 +3,21 @@ import joblib
 import numpy as np
 import pandas as pd
 from flaskr.services.data_preparation import prepare_data
+import os
 
 genre_blueprint = Blueprint('genre', __name__)
 
+# Construct the absolute path
+base_dir = os.path.abspath(os.path.dirname(__file__))
+# base file path for machine learning models
+base_path = os.path.join(base_dir, '../../../machine_learning/models/')
+
 # Load models and encoders
-model = joblib.load('../machine_learning/genre_model_based_number_of_rating.pkl')
-age_encoder = joblib.load('../machine_learning/age_ohe.pkl')
-occupation_encoder = joblib.load('../machine_learning/occupation_ohe.pkl')
-genre_columns = joblib.load('../machine_learning/genre_columns.pkl')
-age_map = joblib.load('../machine_learning/age_map.pkl')
+model = joblib.load(base_path + 'genre_model_based_number_of_rating.pkl')
+age_encoder = joblib.load(base_path + 'age_ohe.pkl')
+occupation_encoder = joblib.load(base_path + 'occupation_ohe.pkl')
+genre_columns = joblib.load(base_path + 'genre_columns.pkl')
+age_map = joblib.load(base_path + 'age_map.pkl')
 
 
 @genre_blueprint.route('/predict_genre', methods=['POST'])

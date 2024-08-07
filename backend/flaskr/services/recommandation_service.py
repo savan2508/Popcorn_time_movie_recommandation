@@ -1,10 +1,16 @@
+import os
+
 import numpy as np
 import pandas as pd
 import joblib
 from scipy.sparse import csr_matrix
 
+# Construct the absolute path
+base_dir = os.path.abspath(os.path.dirname(__file__))
+# base file path for machine learning models
+base_path = os.path.join(base_dir, '../../../machine_learning/models/')
 # Load the similarity matrix
-sparse_similarity_matrix = csr_matrix(joblib.load('../../../machine_learning/models/cosine_similarity_matrix.joblib', mmap_mode='r'))
+sparse_similarity_matrix = csr_matrix(joblib.load(base_path + 'cosine_similarity_matrix.joblib', mmap_mode='r'))
 
 
 def get_recommendations(movie_id, movie_indices, top_n=10):

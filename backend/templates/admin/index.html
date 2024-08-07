@@ -1,0 +1,14 @@
+{% extends 'admin/master.html' %}
+
+{% block page_body %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Welcome to the Admin Interface</h1>
+        <p>
+            <a href="{{ url_for('swagger_ui') }}" class="btn btn-primary" target="_blank">View API Documentation (Swagger UI)</a>
+        </p>
+    </div>
+</div>
+
+{{ super() }}
+{% endblock %}

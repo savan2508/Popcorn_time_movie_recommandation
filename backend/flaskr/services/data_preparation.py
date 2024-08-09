@@ -20,6 +20,16 @@ def age_map_convertor(age):
 
 
 def prepare_data(age, occupation, gender, age_encoder, occupation_encoder, age_map):
+    possible_gender_values_map = {
+        "male": 1,
+        "female": 0,
+        "1": 1,
+        "0": 0,
+        1: 1,
+        0: 0,
+    }
+    gender = possible_gender_values_map[gender]
+
     age_str = age_map[age_map_convertor(age)]
     age_input = np.array(age_str).reshape(1, -1)
     occupation_input = np.array(occupation).reshape(1, -1)

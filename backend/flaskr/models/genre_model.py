@@ -20,15 +20,11 @@ genre_columns = joblib.load(base_path + 'genre_columns.pkl')
 age_map = joblib.load(base_path + 'age_map.pkl')
 
 
-@genre_blueprint.route('/predict_genre', methods=['POST'])
-def predict_genre():
-    data = request.json
-    gender = data.get('gender', 1)
-    age = data.get('age', 28)
-    occupation = data.get('occupation', "executive/managerial")
+def predict_genre(gender, age, occupation):
 
     input_features = prepare_data(age, occupation, gender, age_encoder, occupation_encoder, age_map)
     predictions = model.predict(input_features)
     predicted_genre_labels = [genre for genre, flag in zip(genre_columns, predictions[0]) if flag == 1]
 
-    return jsonify({'predicted_genres': predicted_genre_labels})
+    # return jsonify({'predicted_genres': predicted_genre_labels})
+    return predicted_genre_labels

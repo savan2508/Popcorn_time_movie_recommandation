@@ -26,6 +26,7 @@ class UserSignupSchema(Schema):
     gender = fields.Str(required=True, validate=validate.OneOf(["male", "female"]))
     occupation = fields.Str(required=False)
     preferred_genre = fields.Str(required=False)
+    # recommended_genre = fields.Str(required=False)
     email = fields.Email(required=True)
     username = fields.Str(required=True, validate=validate.Length(min=1))
     password = fields.Str(required=True, validate=validate.Length(min=8))

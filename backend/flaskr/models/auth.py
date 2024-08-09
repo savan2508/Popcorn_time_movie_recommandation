@@ -4,6 +4,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, jwt_re
 from werkzeug.security import generate_password_hash, check_password_hash
 from flaskr import db
 from flaskr.database_models import User
+from flaskr.models.genre_model import predict_genre
 from flaskr.schema import UserSchema, UserSignInSchema, UserSignupSchema
 
 auth_blueprint = ApiBlueprint('auth', 'auth', url_prefix='/auth', description='Authentication endpoints')
@@ -35,15 +36,37 @@ def signup(user_data):
     existing_user_email = User.query.filter_by(email=user_data['email']).first()
     if existing_user_email:
         abort(409, message="User already exists with that email.")
+
     existing_user_username = User.query.filter_by(username=user_data['username']).first()
     if existing_user_username:
         abort(409, message="User already exists with that username.")
+
     password = user_data.pop('password')
+
     user = User(**user_data)
     user.password_hash = generate_password_hash(password)
+
+    # Predict recommended genres based on gender, age, and occupation
+    gender = user_data.get('gender')
+    age = user_data.get('age', 0)  # Default age if not provided
+    occupation = user_data.get('occupation', '')  # Default occupation if not provided
+    recommended_genres = predict_genre(gender, age, occupation)
+    recommended_genres_str = ', '.join(recommended_genres)
+
+    # Create a new User object with recommended genres
+    user = User(
+        **user_data,
+        password_hash=generate_password_hash(password),
+        recommended_genre=recommended_genres_str
+    )
+
+    # TODO: Remove the following line after presentation
+    print(f"User {user.username} created with recommended genres: ",
+          user.recommended_genre, )
+
     db.session.add(user)
     db.session.commit()
-    return "User created", 201
+    return jsonify({"message": "User created", "recommended_genres": recommended_genres_str}), 201
 
 
 @auth_blueprint.route('/signin', methods=['POST'])
@@ -54,15 +77,17 @@ def signin(credentials):
         access_token = create_access_token(identity=user.id)
         refresh_token = create_refresh_token(identity=user.id)
 
-        response = make_response(jsonify(message="Login successful"))
-        response.set_cookie('access_token_cookie', access_token, httponly=True, samesite='Strict', secure=True)
-        response.set_cookie('refresh_token_cookie', refresh_token, httponly=True, samesite='Strict', secure=True)
+        # TODO: Remove the following access token and refresh token after implementation of frontend
+        response = make_response(jsonify(message="Login successful", access_token=access_token, refresh_token=refresh_token))
+
+        response.set_cookie('access_token', access_token, httponly=True, samesite='Strict', secure=True)
+        response.set_cookie('refresh_token', refresh_token, httponly=True, samesite='Strict', secure=True)
         return response
     else:
         abort(401, message="Invalid credentials.")
 
 
-@auth_blueprint.route('/refresh', methods=['POST'])
+@auth_blueprint.route('/refresh_token', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh():
     current_user = get_jwt_identity()

@@ -1,8 +1,8 @@
-"""empty message
+"""Initial migration
 
-Revision ID: 36a6cb97851a
+Revision ID: 37b333669c2c
 Revises: 
-Create Date: 2024-08-06 19:12:44.387084
+Create Date: 2024-08-10 11:49:14.937058
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '36a6cb97851a'
+revision = '37b333669c2c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,6 +34,21 @@ def upgrade():
     sa.Column('release_date', sa.String(), nullable=True),
     sa.Column('poster_path', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('movielens_movies',
+    sa.Column('movie_id', sa.Integer(), nullable=False),
+    sa.Column('movie_name', sa.String(), nullable=False),
+    sa.Column('genres', sa.String(), nullable=False),
+    sa.Column('tmdb_id', sa.Integer(), nullable=True),
+    sa.Column('imdb_id', sa.String(), nullable=True),
+    sa.PrimaryKeyConstraint('movie_id')
+    )
+    op.create_table('movielens_ratings',
+    sa.Column('movie_id', sa.Integer(), nullable=False),
+    sa.Column('movielens_user_id', sa.Integer(), nullable=False),
+    sa.Column('rating', sa.Float(), nullable=True),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('movie_id', 'movielens_user_id')
     )
     op.create_table('user',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -94,6 +109,8 @@ def downgrade():
     op.drop_table('user_reviews')
     op.drop_table('user_ratings')
     op.drop_table('user')
+    op.drop_table('movielens_ratings')
+    op.drop_table('movielens_movies')
     op.drop_table('movie')
     op.drop_table('genre')
     # ### end Alembic commands ###

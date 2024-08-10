@@ -1,7 +1,9 @@
 import os
 from datetime import timedelta
+import random
+from functools import wraps
 
-from flask import Flask
+from flask import Flask, jsonify, request, current_app
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
@@ -56,24 +58,63 @@ def create_app(test_config=None):
 
     # Set up Flask-admin
     admin = Admin(app, name='Admin Interface', template_mode='bootstrap3')
-    from .database_models import User, Movie
+    from flaskr.database_models import User, Movie, MovielensMovie, MovielensRating
     admin.add_view(ModelView(User, db.session))
     admin.add_view(ModelView(Movie, db.session))
+    admin.add_view(ModelView(MovielensMovie, db.session))
+    admin.add_view(ModelView(MovielensRating, db.session))
 
     # Set up Flask-restful
-    api = Api(app)
+    api = Api(app, )
 
-    # Register blueprints
-    # from flaskr.models.genre_model import genre_blueprint
-    # api.register_blueprint(genre_blueprint)
+    # Define the bearerAuth security scheme
+    api.spec.components.security_scheme("bearerAuth", {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+    })
 
-    # from flaskr.models.content_based_filtering import recommendation_blueprint
-    # api.register_blueprint(recommendation_blueprint)
+    # Register the schema with the API
+    from .schema import UserInfoSchema, UserSignupSchema, UserSignInSchema
+    # Register schemas with unique names
+    api.spec.components.schema('UserInfo', schema=UserInfoSchema)
+    api.spec.components.schema('UserSignup', schema=UserSignupSchema)
+    api.spec.components.schema('UserSignIn', schema=UserSignInSchema)
 
     from flaskr.models.auth import auth_blueprint
     api.register_blueprint(auth_blueprint)
 
-    from .routes.user import user_blueprint
-    api.register_blueprint(user_blueprint)
+    from flaskr.routes.user import user_info_blueprint
+    api.register_blueprint(user_info_blueprint)
+
+    from flaskr.movielense_helper import movielense_helper_blueprint
+    api.register_blueprint(movielense_helper_blueprint)
+
+    # Generate and store the PIN
+    app.config['POPULATE_TABLES_PIN'] = generate_pin()
+    print(f"Generated PIN: {app.config['POPULATE_TABLES_PIN']}")
 
     return app
+
+
+def pin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Parse JSON data from the request body
+        json_data = request.get_json()
+
+        # Extract the 'pin' from the JSON data
+        pin = json_data.get('pin') if json_data else None
+        print(f"PIN from JSON body: {pin}")
+
+        # Compare the extracted PIN with the expected PIN
+        if pin != current_app.config['POPULATE_TABLES_PIN']:
+            return jsonify({"message": "Unauthorized"}), 401
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def generate_pin():
+    return str(random.randint(1000, 9999))

@@ -1,7 +1,5 @@
 from flask import Blueprint, request, jsonify
 import joblib
-import numpy as np
-import pandas as pd
 from flaskr.services.data_preparation import prepare_data
 import os
 

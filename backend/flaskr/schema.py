@@ -4,14 +4,17 @@ from marshmallow_sqlalchemy.fields import Nested
 from .database_models import *
 
 
-class UserSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = User
-        load_instance = True
-        include_relationships = True
-        exclude = ['id', 'password_hash', 'firebase_uid', 'recommended_genre']
-
-    password_hash = fields.String(load_only=True, required=True, validate=validate.Length(min=8))
+class UserInfoSchema(Schema):
+    first_name = fields.String()
+    last_name = fields.String()
+    age = fields.Integer()
+    gender = fields.String()
+    occupation = fields.String()
+    preferred_genre = fields.String()
+    recommended_genre = fields.String()
+    email = fields.Email()
+    username = fields.String()
+    id = fields.Integer()
 
 
 class UserSignInSchema(Schema):
@@ -55,7 +58,7 @@ class UserWatchlistSchema(SQLAlchemyAutoSchema):
         model = UserWatchlist
         load_instance = True
 
-    user = Nested(UserSchema, only=['id', 'username'])
+    user = Nested(UserInfoSchema, only=['id', 'username'])
     movie = Nested(MovieSchema, only=['id', 'title'])
 
 
@@ -64,7 +67,7 @@ class UserWatchedSchema(SQLAlchemyAutoSchema):
         model = UserWatched
         load_instance = True
 
-    user = Nested(UserSchema, only=['id', 'username'])
+    user = Nested(UserInfoSchema, only=['id', 'username'])
     movie = Nested(MovieSchema, only=['id', 'title'])
 
 
@@ -73,7 +76,7 @@ class UserRatingSchema(SQLAlchemyAutoSchema):
         model = UserRatings
         load_instance = True
 
-    user = Nested(UserSchema, only=['id', 'username'])
+    user = Nested(UserInfoSchema, only=['id', 'username'])
     movie = Nested(MovieSchema, only=['id', 'title'])
 
 
@@ -82,5 +85,5 @@ class UserReviewSchema(SQLAlchemyAutoSchema):
         model = UserReviews
         load_instance = True
 
-    user = Nested(UserSchema, only=['id', 'username'])
+    user = Nested(UserInfoSchema, only=['id', 'username'])
     movie = Nested(MovieSchema, only=['id', 'title'])

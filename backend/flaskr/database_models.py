@@ -96,3 +96,22 @@ class UserReviews(db.Model):
 
     def __repr__(self):
         return f'<UserReviews id={self.id}, user_id={self.user_id}, movie_id={self.movie_id}>'
+
+
+class MovielensMovie(db.Model):
+    __tablename__ = 'movielens_movies'
+
+    movie_id = db.Column(db.Integer, primary_key=True)
+    movie_name = db.Column(db.String, nullable=False)
+    genres = db.Column(db.String, nullable=False)
+    tmdb_id = db.Column(db.Integer)
+    imdb_id = db.Column(db.String)
+
+
+class MovielensRating(db.Model):
+    __tablename__ = 'movielens_ratings'
+
+    movie_id = db.Column(db.Integer, primary_key=True)
+    movielens_user_id = db.Column(db.Integer, primary_key=True)
+    rating = db.Column(db.Float)
+    timestamp = db.Column(db.DateTime)

@@ -1,11 +1,11 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import jsonify, make_response
 from flask_smorest import Blueprint as ApiBlueprint, abort
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from flaskr import db
 from flaskr.database_models import User
 from flaskr.models.genre_model import predict_genre
-from flaskr.schema import UserSchema, UserSignInSchema, UserSignupSchema
+from flaskr.schema import UserSignInSchema, UserSignupSchema
 
 auth_blueprint = ApiBlueprint('auth', 'auth', url_prefix='/auth', description='Authentication endpoints')
 
@@ -18,8 +18,8 @@ user_signup_schema = UserSignupSchema()
 @auth_blueprint.arguments(user_signup_schema)
 # @auth_blueprint.response(201, UserSchema)
 def signup(user_data):
-    """Register a new user
-
+    """
+    Register a new user
         This endpoint registers a new user. It expects the following fields:
         - first_name (required): The first name of the user.
         - last_name (required): The last name of the user.

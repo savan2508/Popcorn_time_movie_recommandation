@@ -47,6 +47,16 @@ class Genre(db.Model):
         return f'<Genre {self.name}>'
 
 
+class MovielensMovie(db.Model):
+    __tablename__ = 'movielens_movies'
+
+    movie_id = db.Column(db.Integer, primary_key=True)
+    movie_name = db.Column(db.String, nullable=False)
+    genres = db.Column(db.String, nullable=False)
+    tmdb_id = db.Column(db.Integer)
+    imdb_id = db.Column(db.String)
+
+
 class UserWatchlist(db.Model):
     __tablename__ = 'user_watchlist'
 
@@ -59,7 +69,7 @@ class UserWatchlist(db.Model):
         return f'<UserWatchlist user_id={self.user_id}, movie_id={self.movie_id}>'
 
 
-class UserWatched(db.Model):
+class UserWatchHistory(db.Model):
     __tablename__ = 'user_watched'
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
@@ -96,16 +106,6 @@ class UserReviews(db.Model):
 
     def __repr__(self):
         return f'<UserReviews id={self.id}, user_id={self.user_id}, movie_id={self.movie_id}>'
-
-
-class MovielensMovie(db.Model):
-    __tablename__ = 'movielens_movies'
-
-    movie_id = db.Column(db.Integer, primary_key=True)
-    movie_name = db.Column(db.String, nullable=False)
-    genres = db.Column(db.String, nullable=False)
-    tmdb_id = db.Column(db.Integer)
-    imdb_id = db.Column(db.String)
 
 
 class MovielensRating(db.Model):

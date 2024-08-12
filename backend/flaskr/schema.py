@@ -47,6 +47,17 @@ class MovieSchema(SQLAlchemyAutoSchema):
         include_relationships = True
 
 
+class MovielenseMovieSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = MovielensMovie
+        load_instance = True
+
+    genres = fields.Method("get_genres")
+
+    def get_genres(self, obj):
+        return obj.genres.split("|")
+
+
 class GenreSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Genre
@@ -58,17 +69,15 @@ class UserWatchlistSchema(SQLAlchemyAutoSchema):
         model = UserWatchlist
         load_instance = True
 
-    user = Nested(UserInfoSchema, only=['id', 'username'])
-    movie = Nested(MovieSchema, only=['id', 'title'])
+    movielens_movie = Nested(MovielenseMovieSchema)
 
 
-class UserWatchedSchema(SQLAlchemyAutoSchema):
+class UserWatchHistorySchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = UserWatched
+        model = UserWatchHistory
         load_instance = True
 
-    user = Nested(UserInfoSchema, only=['id', 'username'])
-    movie = Nested(MovieSchema, only=['id', 'title'])
+    movielens_movie = Nested(MovielenseMovieSchema, id_field='movie_id')
 
 
 class UserRatingSchema(SQLAlchemyAutoSchema):
@@ -78,6 +87,7 @@ class UserRatingSchema(SQLAlchemyAutoSchema):
 
     user = Nested(UserInfoSchema, only=['id', 'username'])
     movie = Nested(MovieSchema, only=['id', 'title'])
+    movielet_movie = Nested(MovielenseMovieSchema, only=['id', 'title '])
 
 
 class UserReviewSchema(SQLAlchemyAutoSchema):

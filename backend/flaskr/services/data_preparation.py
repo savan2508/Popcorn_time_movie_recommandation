@@ -1,5 +1,126 @@
+import json
+import os
+import redis
+import requests
+from dotenv import load_dotenv
+
 import numpy as np
 import pandas as pd
+
+from flaskr import db
+from flaskr.database_models import MovielensMovie
+
+# Load environment variables from the .env file
+load_dotenv()
+
+OMDB_API_KEY = os.getenv('OMDB_API_KEY')
+OMDB_API_URL = "https://www.omdbapi.com/"
+
+# Set up Redis client
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+
+
+def format_imdb_id(imdb_id):
+    """
+    Format the IMDb ID to the OMDB API required format.
+
+    Args:
+        imdb_id (int): The integer IMDb ID.
+
+    Returns:
+        str: The formatted IMDb ID, e.g., "tt1234567".
+    """
+    return f"tt{str(imdb_id).zfill(7)}"
+
+
+def fetch_omdb_details(imdb_id):
+    """
+    Fetch movie details from OMDB API and cache the result.
+
+    Args:
+        imdb_id (str): The formatted IMDb ID.
+
+    Returns:
+        dict: The movie details from OMDB API, or None if an error occurs.
+    """
+    # Check Redis cache
+    cached_data = redis_client.get(imdb_id)
+    if cached_data:
+        print(f"Cache hit for {imdb_id}")
+        return json.loads(cached_data)
+
+    print(f"Cache miss for {imdb_id}. Fetching from OMDB API.")
+
+    params = {
+        'i': imdb_id,
+        'apikey': OMDB_API_KEY,
+        'plot': 'full',
+    }
+
+    try:
+        response = requests.get(OMDB_API_URL, params=params)
+        response.raise_for_status()
+        movie_details = response.json()
+
+        if movie_details.get('Response') == 'True':
+            # Store in Redis cache with an expiration time (e.g., 1 day)
+            redis_client.setex(imdb_id, 86400, json.dumps(movie_details))
+            return movie_details
+        else:
+            print(f"Error fetching details for IMDb ID {imdb_id}: {movie_details.get('Error')}")
+            return None
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+        return None
+
+
+def get_movie_details(movies):
+    # Retrieve movie names in a single query
+    movie_ids = [movie.movie_id for movie in movies]
+    movie_names = db.session.query(MovielensMovie.movie_id, MovielensMovie.movie_name).filter(
+        MovielensMovie.movie_id.in_(movie_ids)
+    ).all()
+
+    movie_dict = {movie.movie_id: movie.movie_name for movie in movie_names}
+
+    movie_details_list = []
+
+    for movie in movies:
+        # Basic movie details
+        movie_details = {
+            "movie_id": movie.movie_id,
+            "movie_name": movie_dict.get(movie.movie_id, "Unknown"),
+            "genres": MovielensMovie.query.get(movie.movie_id).genres,
+            "imdb_id": MovielensMovie.query.get(movie.movie_id).imdb_id,
+            "tmdb_id": MovielensMovie.query.get(movie.movie_id).tmdb_id
+        }
+
+        # Fetch additional details from OMDB
+        if movie_details['imdb_id']:
+            omdb_details = fetch_omdb_details(format_imdb_id(movie_details['imdb_id']))
+            if omdb_details:
+                movie_details.update({
+                    "omdb_title": omdb_details.get('Title'),
+                    "omdb_year": omdb_details.get('Year'),
+                    "omdb_director": omdb_details.get('Director'),
+                    "omdb_actors": omdb_details.get('Actors'),
+                    "omdb_plot": omdb_details.get('Plot'),
+                    "omdb_poster": omdb_details.get('Poster'),
+                    "omdb_rating": omdb_details.get('imdbRating'),
+                    "omdb_genres": omdb_details.get('Genre')
+                })
+
+        # Conditionally add avg_rating and rating_count if they exist
+        if hasattr(movie, 'avg_rating'):
+            movie_details["avg_rating"] = movie.avg_rating
+
+        if hasattr(movie, 'rating_count'):
+            movie_details["rating_count"] = movie.rating_count
+
+        movie_details_list.append(movie_details)
+
+    return movie_details_list
 
 
 def age_map_convertor(age):

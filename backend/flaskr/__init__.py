@@ -2,6 +2,9 @@ import os
 from datetime import timedelta
 import random
 from functools import wraps
+import subprocess
+import time
+import redis
 
 from flask import Flask, jsonify, request, current_app
 from flask_bcrypt import Bcrypt
@@ -56,13 +59,23 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    # Start Redis when the Flask app starts
+    start_redis()
+
+    # Set up Redis client
+    try:
+        redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+        redis_client.ping()  # Test connection
+        print("Connected to Redis")
+    except redis.exceptions.ConnectionError as e:
+        print(f"Redis connection error: {e}")
+
     # Set up Flask-admin
     admin = Admin(app, name='Admin Interface', template_mode='bootstrap3')
-    from flaskr.database_models import User, Movie, MovielensMovie, MovielensRating
+    from flaskr.database_models import User, Movie, MovielensMovie
     admin.add_view(ModelView(User, db.session))
     admin.add_view(ModelView(Movie, db.session))
     admin.add_view(ModelView(MovielensMovie, db.session))
-    admin.add_view(ModelView(MovielensRating, db.session))
 
     # Set up Flask-restful
     api = Api(app, )
@@ -86,6 +99,12 @@ def create_app(test_config=None):
 
     from flaskr.routes.user import user_info_blueprint
     api.register_blueprint(user_info_blueprint)
+
+    from flaskr.routes.user import user_actions_blueprint
+    api.register_blueprint(user_actions_blueprint)
+
+    from flaskr.models.movie_recommendations import movies_recommendation_blueprint
+    api.register_blueprint(movies_recommendation_blueprint)
 
     from flaskr.movielense_helper import movielense_helper_blueprint
     api.register_blueprint(movielense_helper_blueprint)
@@ -118,3 +137,15 @@ def pin_required(f):
 
 def generate_pin():
     return str(random.randint(1000, 9999))
+
+
+def start_redis():
+    """
+    Start the Redis server as a subprocess.
+    """
+    try:
+        subprocess.Popen(['redis-server'])  # Start Redis server as a subprocess
+        time.sleep(1)  # Wait for Redis to start
+        print("Redis server started successfully.")
+    except Exception as e:
+        print(f"Error starting Redis server: {e}")

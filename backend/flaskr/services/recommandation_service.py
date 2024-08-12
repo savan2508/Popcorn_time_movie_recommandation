@@ -1,9 +1,12 @@
 import os
 
 import numpy as np
-import pandas as pd
 import joblib
+
 from scipy.sparse import csr_matrix
+from flaskr.services.data_preparation import get_movie_details
+
+from flaskr.database_models import MovielensMovie
 
 # Construct the absolute path
 base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -27,27 +30,28 @@ def get_recommendations(movie_id, movie_indices, top_n=10):
     return top_similar_indices
 
 
-def find_movie_ids_by_name(movie_name, movie_dataset):
-    movie_name_lower = movie_name.lower()
-    matching_movies = movie_dataset[movie_dataset['title'].str.lower().str.contains(movie_name_lower)]
-    return matching_movies['movieId'].tolist()
+def find_movie_ids_by_name(movie_name):
+    matching_movies = MovielensMovie.query.filter(
+        MovielensMovie.movie_name.ilike(f"%{movie_name}%")
+    ).all()
+    return [movie.movie_id for movie in matching_movies]
 
 
-def get_movie_ids(movie_input, movie_dataset):
+def get_movie_ids(movie_input):
     movie_ids = []
     if isinstance(movie_input, list):
         for movie in movie_input:
             if isinstance(movie, int):
                 movie_ids.append(movie)
             elif isinstance(movie, str):
-                movie_ids.extend(find_movie_ids_by_name(movie, movie_dataset))
+                movie_ids.extend(find_movie_ids_by_name(movie))
             else:
                 return "Invalid input type. Please provide a movie ID (int) or movie name (str)."
     elif isinstance(movie_input, int) or isinstance(movie_input, str):
         if isinstance(movie_input, int):
             movie_ids = [movie_input]
         elif isinstance(movie_input, str):
-            movie_ids = find_movie_ids_by_name(movie_input, movie_dataset)
+            movie_ids = find_movie_ids_by_name(movie_input)
             if not movie_ids:
                 return f"No movie with the name '{movie_input}' exists. Please try again."
     else:
@@ -56,28 +60,27 @@ def get_movie_ids(movie_input, movie_dataset):
     return movie_ids
 
 
-def get_movie_recommendations(movie_input, top_n, movie_dataset, link_dataset):
-    movie_ids = get_movie_ids(movie_input, movie_dataset)
-    movie_indices_local = {movieId: idx for idx, movieId in enumerate(movie_dataset['movieId'])}
-
+def get_movie_recommendations(movie_input, top_n=10):
+    movie_ids = get_movie_ids(movie_input)
+    # movie_indices_local = {movieId: idx for idx, movieId in enumerate(movie_dataset['movieId'])}
+    movie_indices_local = {
+        movie.movie_id: idx for idx, movie in enumerate(MovielensMovie.query.all())
+    }
     recommendations_dict = {}
 
     for movie_id in movie_ids:
-        movie_name = movie_dataset[movie_dataset['movieId'] == movie_id]['title'].values[0]
+        movie = MovielensMovie.query.get(movie_id)
+        movie_name = movie.movie_name if movie else "Unknown"
+
+        # Get the recommendations based on the movie ID
         _recommendations = get_recommendations(movie_id, movie_indices=movie_indices_local, top_n=top_n)
 
         recommended_movies_info = []
 
         for rec_movie_id in _recommendations:
-            recommended_movie = movie_dataset[movie_dataset['movieId'] == rec_movie_id]
-            if not recommended_movie.empty:
-                movie_info = {
-                    'movie_name': recommended_movie['title'].values[0],
-                    'genre': recommended_movie['genres'].values[0],
-                    'movieId': rec_movie_id,
-                    'imdb_id': link_dataset[link_dataset['movieId'] == rec_movie_id]['imdbId'].values[0],
-                    'tmdb_id': link_dataset[link_dataset['movieId'] == rec_movie_id]['tmdbId'].values[0]
-                }
+            recommended_movie = MovielensMovie.query.get(rec_movie_id)
+            if recommended_movie:
+                movie_info = get_movie_details([recommended_movie])[0]
                 recommended_movies_info.append(movie_info)
 
         recommendations_dict[movie_id] = {

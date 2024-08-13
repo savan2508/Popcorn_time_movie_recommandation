@@ -76,24 +76,27 @@ def fetch_omdb_details(imdb_id):
 
 
 def get_movie_details(movies):
-    # Retrieve movie names in a single query
-    movie_ids = [movie.movie_id for movie in movies]
-    movie_names = db.session.query(MovielensMovie.movie_id, MovielensMovie.movie_name).filter(
-        MovielensMovie.movie_id.in_(movie_ids)
-    ).all()
-
-    movie_dict = {movie.movie_id: movie.movie_name for movie in movie_names}
+    """
+    Get detailed information for a list of movies.
+    :param movies:
+    :return:
+    """
+    if type(movies) != list:
+        movies = [movies]
+    else:
+        # Retrieve movie names in a single query
+        movies = [movie.movie_id for movie in movies]
 
     movie_details_list = []
 
     for movie in movies:
         # Basic movie details
         movie_details = {
-            "movie_id": movie.movie_id,
-            "movie_name": movie_dict.get(movie.movie_id, "Unknown"),
-            "genres": MovielensMovie.query.get(movie.movie_id).genres,
-            "imdb_id": MovielensMovie.query.get(movie.movie_id).imdb_id,
-            "tmdb_id": MovielensMovie.query.get(movie.movie_id).tmdb_id
+            "movie_id": movie,
+            "movie_name": MovielensMovie.query.get(movie).movie_name,
+            "genres": MovielensMovie.query.get(movie).genres,
+            "imdb_id": MovielensMovie.query.get(movie).imdb_id,
+            "tmdb_id": MovielensMovie.query.get(movie).tmdb_id
         }
 
         # Fetch additional details from OMDB

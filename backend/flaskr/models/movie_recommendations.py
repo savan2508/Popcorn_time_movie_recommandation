@@ -1,5 +1,3 @@
-from wsgiref import validate
-
 from flask_smorest import Blueprint as ApiBlueprint
 from flaskr import db
 from flaskr.database_models import MovielensMovie, MovielensRating
@@ -7,6 +5,7 @@ from sqlalchemy import func
 from flask import request, jsonify
 from marshmallow import Schema, fields
 
+from flaskr.decorators import cache_response
 from flaskr.services.data_preparation import get_movie_details
 from flaskr.services.recommandation_service import get_movie_recommendations
 
@@ -24,9 +23,11 @@ class MovieRecommendationSchema(Schema):
         default=10,
     )
 
+RADIS_CACHE_TIMEOUT = 100000
 
 @movies_recommendation_blueprint.route('/recommend_movies', methods=['POST'])
 @movies_recommendation_blueprint.arguments(MovieRecommendationSchema)
+# @cache_response(timeout=RADIS_CACHE_TIMEOUT, persist=True)
 def recommend_movies(data):
     """
     Recommend movies based on the input movie(s).
@@ -90,11 +91,13 @@ def recommend_movies(data):
     top_n = data.get('top_n', 10)
 
     recommendations_dict = get_movie_recommendations(movie_input, top_n)
+    print(f"Recommendations: {recommendations_dict}")
 
     return jsonify(recommendations_dict)
 
 
 @movies_recommendation_blueprint.route('/<genre>/top_rated', methods=['GET'])
+# @cache_response(timeout=RADIS_CACHE_TIMEOUT, persist=True)
 def get_top_movies(genre):
     """
     Get top 10 movies for a given genre by average rating and number of ratings.
@@ -153,6 +156,7 @@ def get_top_movies(genre):
 
 
 @movies_recommendation_blueprint.route('/popular', methods=['GET'])
+@cache_response(timeout=RADIS_CACHE_TIMEOUT, persist=True)
 def get_popular_movies():
     """
     Get top 50 movies by average rating and top 50 movies by the number of ratings across all genres.

@@ -5,8 +5,7 @@ export const ColorModeContext = createContext();
 
 export const ColorModeProvider = ({ children }) => {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  console.log("prefersDarkMode", prefersDarkMode);
-  const [mode, setMode] = useState("dark");
+  const [mode, setMode] = useState(prefersDarkMode ? "dark" : "light");
   const ToggleColorMode = () => {
     setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
   };

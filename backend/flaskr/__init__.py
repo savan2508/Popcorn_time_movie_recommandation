@@ -14,6 +14,7 @@ from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_smorest import Api
 from flask_admin.contrib.sqla import ModelView
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -66,9 +67,14 @@ def create_app(test_config=None):
     try:
         redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
         redis_client.ping()  # Test connection
+        # Attach the Redis client to the app context
+        app.redis_client = redis_client
         print("Connected to Redis")
     except redis.exceptions.ConnectionError as e:
         print(f"Redis connection error: {e}")
+
+    # Configure CORS
+    cors = CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
     # Set up Flask-admin
     admin = Admin(app, name='Admin Interface', template_mode='bootstrap3')

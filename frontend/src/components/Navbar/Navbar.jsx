@@ -13,13 +13,32 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { ColorModeButton } from "./ColorModeButton.jsx";
 import { useState } from "react";
-import { ListItem, ListItemText } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
+import { GenreDropDown } from "./GenreDropDown.jsx";
 
 const pages = ["Watchlist", "Recommendations"];
-const genres = ["Action", "Comedy", "Drama", "Horror", "Romance"];
-const settings = ["Profile", "Account", "Logout"];
+const genres = [
+  "Action",
+  "Adventure",
+  "Animation",
+  "Children's",
+  "Comedy",
+  "Crime",
+  "Documentary",
+  "Drama",
+  "Fantasy",
+  "Film-Noir",
+  "Horror",
+  "Musical",
+  "Mystery",
+  "Romance",
+  "Sci-Fi",
+  "Thriller",
+  "War",
+  "Western",
+];
+const settings = ["Account", "Logout"];
 
 export const Navbar = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
@@ -52,6 +71,10 @@ export const Navbar = () => {
     setAnchorElUser(null);
   };
 
+  function handleNavigation(page) {
+    return undefined;
+  }
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -61,7 +84,7 @@ export const Navbar = () => {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -72,28 +95,10 @@ export const Navbar = () => {
               textDecoration: "none",
             }}
           >
-            LOGO
+            Popcorn Time
           </Typography>
 
-          <ListItem button onClick={handleGenreMenu}>
-            <ListItemText primary="Genres" />
-          </ListItem>
-          {genres.map((genre) => (
-            <MenuItem
-              key={genre}
-              onClick={() => {
-                handleGenreClose();
-                navigate(`/genres/${genre.toLowerCase()}`);
-              }}
-            >
-              {genre}
-            </MenuItem>
-          ))}
-          {pages.map((page) => (
-            <ListItem button key={page} onClick={() => handleNavigation(page)}>
-              <ListItemText primary={page} />
-            </ListItem>
-          ))}
+          <GenreDropDown genres={genres} />
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton

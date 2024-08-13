@@ -61,31 +61,36 @@ def get_movie_ids(movie_input):
 
 
 def get_movie_recommendations(movie_input, top_n=10):
-    movie_ids = get_movie_ids(movie_input)
+    top_n = top_n + 1 # Include the input movie in the recommendations
+    input_movie_ids = get_movie_ids(movie_input)
     # movie_indices_local = {movieId: idx for idx, movieId in enumerate(movie_dataset['movieId'])}
     movie_indices_local = {
         movie.movie_id: idx for idx, movie in enumerate(MovielensMovie.query.all())
     }
-    recommendations_dict = {}
+    recommendations_dict = []
 
-    for movie_id in movie_ids:
+    for movie_id in input_movie_ids:
         movie = MovielensMovie.query.get(movie_id)
-        movie_name = movie.movie_name if movie else "Unknown"
+        if not movie:
+            continue
+
+        input_movie_info = get_movie_details(movie_id)[0]
 
         # Get the recommendations based on the movie ID
         _recommendations = get_recommendations(movie_id, movie_indices=movie_indices_local, top_n=top_n)
+        print(f"Recommendations for movie ID {movie_id}: {_recommendations}")
 
         recommended_movies_info = []
 
         for rec_movie_id in _recommendations:
-            recommended_movie = MovielensMovie.query.get(rec_movie_id)
+            recommended_movie = get_movie_details(rec_movie_id)[0]
             if recommended_movie:
-                movie_info = get_movie_details([recommended_movie])[0]
+                movie_info = recommended_movie
                 recommended_movies_info.append(movie_info)
 
-        recommendations_dict[movie_id] = {
-            'movie_name': movie_name,
+        recommendations_dict.append({
+            'movie': input_movie_info,
             'recommended_movies': recommended_movies_info
-        }
+        })
 
     return recommendations_dict

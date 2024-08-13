@@ -9,7 +9,6 @@ import { useContext } from "react";
 export const ColorModeButton = () => {
   const theme = useTheme();
   const { mode, ToggleColorMode } = useContext(ColorModeContext);
-  console.log(mode);
   return (
     <IconButton sx={{ ml: 1 }} onClick={ToggleColorMode} color="inherit">
       {theme.palette.mode === "dark" ? (

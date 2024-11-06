@@ -74,7 +74,14 @@ def create_app(test_config=None):
         print(f"Redis connection error: {e}")
 
     # Configure CORS
-    cors = CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+    cors = CORS(app, supports_credentials=True, resources={
+        r"/*": {
+            "origins": "http://localhost:5173",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
     # Set up Flask-admin
     admin = Admin(app, name='Admin Interface', template_mode='bootstrap3')

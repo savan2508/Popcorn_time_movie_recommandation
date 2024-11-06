@@ -7,21 +7,34 @@ import { MenuItem as BaseMenuItem, menuItemClasses } from "@mui/base/MenuItem";
 import { styled } from "@mui/system";
 import { CssTransition } from "@mui/base/Transitions";
 import { PopupContext } from "@mui/base/Unstable_Popup";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const GenreDropDown = ({ genres }) => {
   const navigate = useNavigate();
-  const createHandleMenuClick = (menuItem) => {
-    return () => {
-      navigate(`/genre/${menuItem}`);
-    };
+  const { genre: currentGenre } = useParams();
+  const [selectedGenre, setSelectedGenre] = React.useState(currentGenre);
+
+  const handleGenreChange = (genre) => {
+    setSelectedGenre(genre);
+    navigate(`/genre/${genre}`);
   };
+
+  React.useEffect(() => {
+    if (selectedGenre !== currentGenre) {
+      setSelectedGenre(currentGenre);
+    }
+  }, [currentGenre]);
+
   return (
     <Dropdown>
       <MenuButton>Genres</MenuButton>
       <Menu slots={{ listbox: AnimatedListbox }}>
         {genres.map((genre) => (
-          <MenuItem key={genre} onClick={createHandleMenuClick(genre)}>
+          <MenuItem
+            key={genre}
+            selected={genre === selectedGenre}
+            onClick={() => handleGenreChange(genre)}
+          >
             {genre}
           </MenuItem>
         ))}
@@ -29,7 +42,6 @@ export const GenreDropDown = ({ genres }) => {
     </Dropdown>
   );
 };
-
 const blue = {
   50: "#F0F7FF",
   100: "#C2E0FF",

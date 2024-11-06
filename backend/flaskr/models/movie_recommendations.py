@@ -91,13 +91,12 @@ def recommend_movies(data):
     top_n = data.get('top_n', 10)
 
     recommendations_dict = get_movie_recommendations(movie_input, top_n)
-    print(f"Recommendations: {recommendations_dict}")
 
     return jsonify(recommendations_dict)
 
 
 @movies_recommendation_blueprint.route('/<genre>/top_rated', methods=['GET'])
-# @cache_response(timeout=RADIS_CACHE_TIMEOUT, persist=True)
+@cache_response(timeout=RADIS_CACHE_TIMEOUT, persist=True)
 def get_top_movies(genre):
     """
     Get top 10 movies for a given genre by average rating and number of ratings.

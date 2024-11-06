@@ -78,8 +78,8 @@ def fetch_omdb_details(imdb_id):
 def get_movie_details(movies):
     """
     Get detailed information for a list of movies.
-    :param movies:
-    :return:
+    :param movies: List of movie objects or a single movie object.
+    :return: List of dictionaries containing detailed movie information.
     """
     if type(movies) != list:
         movies = [movies]
@@ -106,12 +106,27 @@ def get_movie_details(movies):
                 movie_details.update({
                     "omdb_title": omdb_details.get('Title'),
                     "omdb_year": omdb_details.get('Year'),
+                    "omdb_rated": omdb_details.get('Rated'),
+                    "omdb_released": omdb_details.get('Released'),
+                    "omdb_runtime": omdb_details.get('Runtime'),
+                    "omdb_genre": omdb_details.get('Genre'),
                     "omdb_director": omdb_details.get('Director'),
+                    "omdb_writer": omdb_details.get('Writer'),
                     "omdb_actors": omdb_details.get('Actors'),
-                    "omdb_plot": omdb_details.get('Plot'),
+                    "omdb_language": omdb_details.get('Language'),
+                    "omdb_country": omdb_details.get('Country'),
+                    "omdb_awards": omdb_details.get('Awards'),
                     "omdb_poster": omdb_details.get('Poster'),
-                    "omdb_rating": omdb_details.get('imdbRating'),
-                    "omdb_genres": omdb_details.get('Genre')
+                    "omdb_ratings": omdb_details.get('Ratings'),
+                    "omdb_metascore": omdb_details.get('Metascore'),
+                    "omdb_imdbRating": omdb_details.get('imdbRating'),
+                    "omdb_imdbVotes": omdb_details.get('imdbVotes'),
+                    "omdb_type": omdb_details.get('Type'),
+                    "omdb_dvd": omdb_details.get('DVD'),
+                    "omdb_boxOffice": omdb_details.get('BoxOffice'),
+                    "omdb_production": omdb_details.get('Production'),
+                    "omdb_website": omdb_details.get('Website'),
+                    "omdb_plot": omdb_details.get('Plot'),
                 })
 
         # Conditionally add avg_rating and rating_count if they exist

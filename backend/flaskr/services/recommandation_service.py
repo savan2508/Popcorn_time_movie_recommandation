@@ -78,7 +78,6 @@ def get_movie_recommendations(movie_input, top_n=10):
 
         # Get the recommendations based on the movie ID
         _recommendations = get_recommendations(movie_id, movie_indices=movie_indices_local, top_n=top_n)
-        print(f"Recommendations for movie ID {movie_id}: {_recommendations}")
 
         recommended_movies_info = []
 

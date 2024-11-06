@@ -49,7 +49,7 @@ def signup(user_data):
     # Predict recommended genres based on gender, age, and occupation
     gender = user_data.get('gender')
     age = user_data.get('age', 0)  # Default age if not provided
-    occupation = user_data.get('occupation', '')  # Default occupation if not provided
+    occupation = user_data.get('occupation', '')
     recommended_genres = predict_genre(gender, age, occupation)
     recommended_genres_str = ', '.join(recommended_genres)
 

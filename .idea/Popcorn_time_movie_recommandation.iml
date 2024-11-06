@@ -4,7 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/backend/.venv" />
     </content>
-    <orderEntry type="jdk" jdkName="popcorn_env" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.11 (Popcorn_time_movie_recommandation)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TemplatesService">

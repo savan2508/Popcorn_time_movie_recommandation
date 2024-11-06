@@ -15,6 +15,9 @@ import {
 import { useContext } from "react";
 import { GenrePage } from "./pages/GenrePage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { MoviePage } from "./pages/MoviePage.jsx";
+import { ProtectedRoute } from "./components/ProtecteRoute/ProtectedRoute.jsx";
+import Account from "./pages/Account.jsx";
 
 const App = () => {
   return (
@@ -36,10 +39,35 @@ const AppContent = () => {
           <Routes>
             <Route index element={<Home />} />
             <Route path="/genre/:genre" element={<GenrePage />} />
+            <Route path="/movies/:movieId" element={<MoviePage />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/watchlist" element={<Watchlist />} />
-            <Route path="/recommendations" element={<Recommendations />} />
+            {/*<Route path="/watchlist" element={<Watchlist />} />*/}
+            {/*<Route path="/recommendations" element={<Recommendations />} />*/}
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <Account />
+                </ProtectedRoute>
+              }
+            />
+            {/*<Route*/}
+            {/*  path="/recommendations"*/}
+            {/*  element={*/}
+            {/*    <ProtectedRoute>*/}
+            {/*      <Recommendations />*/}
+            {/*    </ProtectedRoute>*/}
+            {/*  }*/}
+            {/*/>*/}
+            <Route
+              path="/watchlist"
+              element={
+                <ProtectedRoute>
+                  <Watchlist />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Router>
       </AuthProvider>

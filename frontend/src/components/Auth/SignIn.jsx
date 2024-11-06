@@ -1,11 +1,13 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { Box, Button, TextField, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export const SignIn = () => {
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [error, setError] = useState(null);
@@ -22,7 +24,7 @@ export const SignIn = () => {
     setError(null);
     try {
       await login(credentials);
-      // Redirect or update state as needed after successful login
+      navigate("/");
     } catch (error) {
       setError("Invalid username or password");
       console.error("Error signing in:", error);
@@ -42,9 +44,9 @@ export const SignIn = () => {
       <form onSubmit={handleSubmit}>
         <TextField
           fullWidth
-          label="Username"
-          name="username"
-          value={credentials.username}
+          label="Email"
+          name="email"
+          value={credentials.email}
           onChange={handleChange}
           margin="normal"
           required
@@ -69,6 +71,12 @@ export const SignIn = () => {
           Sign In
         </Button>
       </form>
+      <Box mt={2}>
+        <Typography>
+          Don\'t have an account?{" "}
+          <Button onClick={() => navigate("/signup")}>Sign Up Here</Button>
+        </Typography>
+      </Box>
     </Box>
   );
 };
